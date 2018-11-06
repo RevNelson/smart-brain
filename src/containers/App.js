@@ -69,21 +69,22 @@ class App extends Component {
   };
 
   calculateFaceLocation = data => {
-    const faceBox = data.outputs[0].data.regions[0].region_info.bounding_box;
+    const faces = data.outputs[0].data.regions;
+    const faceBoxes = faces.map(face => face.region_info.bounding_box);
     const image = document.getElementById("inputImage");
     const imageWidth = Number(image.width);
     const imageHeight = Number(image.height);
-    return {
+    const boxes = faceBoxes.map(faceBox => ({
       leftCol: faceBox.left_col * imageWidth,
       topRow: faceBox.top_row * imageHeight,
       rightCol: imageWidth - faceBox.right_col * imageWidth,
-      bottomRow: imageHeight - faceBox.bottom_row * imageHeight,
-      loggedIn: false
-    };
+      bottomRow: imageHeight - faceBox.bottom_row * imageHeight
+    }));
+    return boxes;
   };
 
-  displayFaceBox = box => {
-    this.setState({ box: box });
+  displayFaceBox = boxes => {
+    this.setState({ box: boxes });
   };
 
   onInputChange = event => {
@@ -122,7 +123,6 @@ class App extends Component {
 
   onRouteChange = route => {
     if (route === "signOut") {
-      console.log("Signing Out");
       this.setState(initialState);
     } else if (route === "home") {
       this.setState({ loggedIn: true });
@@ -154,7 +154,7 @@ class App extends Component {
               onInputChange={this.onInputChange}
               onSubmit={this.onSubmit}
             />
-            <FaceRecognition box={box} imageURL={imageURL} />
+            <FaceRecognition boxes={box} imageURL={imageURL} />
           </div>
         ) : route === "signIn" || route === "signOut" ? (
           <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
