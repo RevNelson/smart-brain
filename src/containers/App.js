@@ -13,7 +13,7 @@ import "tachyons";
 const initialState = {
   input: "",
   imageURL: "",
-  box: [],
+  boxes: [],
   route: "signIn",
   loggedIn: false,
   user: {
@@ -68,22 +68,23 @@ class App extends Component {
     });
   };
 
-  calculateFaceLocation = data => {
-    const faceBox = data.outputs[0].data.regions[0].region_info.bounding_box;
+  calculateFaceLocations = data => {
+    const faces = data.outputs[0].data.regions;
+    const faceBoxes = faces.map(face => face.region_info.bounding_box);
     const image = document.getElementById("inputImage");
     const imageWidth = Number(image.width);
     const imageHeight = Number(image.height);
-    return {
+    const boxes = faceBoxes.map(faceBox => ({
       leftCol: faceBox.left_col * imageWidth,
       topRow: faceBox.top_row * imageHeight,
       rightCol: imageWidth - faceBox.right_col * imageWidth,
-      bottomRow: imageHeight - faceBox.bottom_row * imageHeight,
-      loggedIn: false
-    };
+      bottomRow: imageHeight - faceBox.bottom_row * imageHeight
+    }));
+    return boxes;
   };
 
-  displayFaceBox = box => {
-    this.setState({ box: box });
+  displayFaceBoxes = boxes => {
+    this.setState({ boxes: boxes });
   };
 
   onInputChange = event => {
@@ -115,14 +116,13 @@ class App extends Component {
             })
             .catch(err => console.log);
         }
-        this.displayFaceBox(this.calculateFaceLocation(response));
+        this.displayFaceBoxes(this.calculateFaceLocations(response));
       })
       .catch(err => console.log(err));
   };
 
   onRouteChange = route => {
     if (route === "signOut") {
-      console.log("Signing Out");
       this.setState(initialState);
     } else if (route === "home") {
       this.setState({ loggedIn: true });
@@ -131,7 +131,7 @@ class App extends Component {
   };
 
   render() {
-    const { loggedIn, imageURL, route, box } = this.state;
+    const { loggedIn, imageURL, route, boxes } = this.state;
     return (
       <div className="App">
         <Particles params={particleOptions} className="particles" />
@@ -154,7 +154,7 @@ class App extends Component {
               onInputChange={this.onInputChange}
               onSubmit={this.onSubmit}
             />
-            <FaceRecognition box={box} imageURL={imageURL} />
+            <FaceRecognition boxes={boxes} imageURL={imageURL} />
           </div>
         ) : route === "signIn" || route === "signOut" ? (
           <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
