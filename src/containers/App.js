@@ -1,14 +1,15 @@
 import React, { Component } from "react";
-import Navigation from "../components/Navigation";
+import Navigation from "../components/Navigation/Navigation";
 import Logo from "../components/Logo/Logo";
 import ImageLinkForm from "../components/ImageLinkForm/ImageLinkForm";
 import Rank from "../components/Rank";
 import SignIn from "../components/SignIn/SignIn";
 import Register from "../components/Register/Register";
 import FaceRecognition from "../components/FaceRecognition/FaceRecognition";
+import Profile from "../components/Profile/Profile";
+import Modal from "../components/Modal/Modal";
 import "./App.css";
 import Particles from "react-particles-js";
-import "tachyons";
 
 const initialState = {
   input: "",
@@ -16,6 +17,7 @@ const initialState = {
   boxes: [],
   route: "signIn",
   loggedIn: false,
+  isProfileOpen: false,
   user: {
     id: "",
     name: "",
@@ -130,8 +132,15 @@ class App extends Component {
     this.setState({ route: route });
   };
 
+  toggleModal = () => {
+    this.setState(prevState => ({
+      ...prevState,
+      isProfileOpen: !prevState.isProfileOpen
+    }));
+  };
+
   render() {
-    const { loggedIn, imageURL, route, boxes } = this.state;
+    const { loggedIn, imageURL, route, boxes, isProfileOpen } = this.state;
     return (
       <div className="App">
         <Particles params={particleOptions} className="particles" />
@@ -141,7 +150,19 @@ class App extends Component {
           </div>
           <div className="w-40" />
           <div className="w-40">
-            <Navigation status={loggedIn} onRouteChange={this.onRouteChange} />
+            <Navigation
+              status={loggedIn}
+              onRouteChange={this.onRouteChange}
+              toggleModal={this.toggleModal}
+            />
+            {isProfileOpen && (
+              <Modal>
+                <Profile
+                  isProfileOpen={isProfileOpen}
+                  toggleModal={this.toggleModal}
+                />
+              </Modal>
+            )}
           </div>
         </div>
         {route === "home" ? (
