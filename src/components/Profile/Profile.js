@@ -8,38 +8,48 @@ class Profile extends React.Component {
       name: this.props.user.name,
       age: this.props.user.age,
       pet: this.props.user.pet
-    }
+    };
   }
 
-  onFormChange = (event) => {
-    switch(event.target.name) {
-      case 'user-name':
-        this.setState({name: event.target.value})
+  onFormChange = event => {
+    switch (event.target.name) {
+      case "user-name":
+        this.setState({ name: event.target.value });
         break;
-      case 'user-age':
-        this.setState({age: event.target.value})
+      case "user-age":
+        this.setState({ age: event.target.value });
         break;
-      case 'user-pet':
-        this.setState({pet: event.target.value})
+      case "user-pet":
+        this.setState({ pet: event.target.value });
         break;
       default:
         return;
     }
-  }
+  };
 
-  onProfileUpdate = (data) => {
-    fetch(`${process.env.REACT_APP_NODE_SERVER}/profile/${this.props.user.id}`, {
-      method: 'post',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ formInput: data })
-    }).then(response => {
-      this.props.toggleModal();
-      this.props.loadUser({...this.props.user, ...data});
-    }).catch(console.log);
-  }
+  onProfileUpdate = data => {
+    fetch(
+      `${process.env.REACT_APP_NODE_SERVER}/profile/${this.props.user.id}`,
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: window.sessionStorage.getItem("token")
+        },
+        body: JSON.stringify({ formInput: data })
+      }
+    )
+      .then(resp => {
+        if (resp.status === 200 || resp.status === 304) {
+          this.props.toggleModal();
+          this.props.loadUser({ ...this.props.user, ...data });
+        }
+      })
+      .catch(console.log);
+  };
 
   render() {
-    const { user, toggleModal } = this.props
+    const { user, toggleModal } = this.props;
     const { name, age, pet } = this.state;
     return (
       <div className="profile-modal">
@@ -91,8 +101,10 @@ class Profile extends React.Component {
               className="mt4"
               style={{ display: "flex", justifyContent: "space-evenly" }}
             >
-              <button className="b pa2 grow pointer hover-white w-40 bg-light-blue b--black-20"
-                onClick={() => this.onProfileUpdate({ name, age, pet })}>
+              <button
+                className="b pa2 grow pointer hover-white w-40 bg-light-blue b--black-20"
+                onClick={() => this.onProfileUpdate({ name, age, pet })}
+              >
                 Save
               </button>
               <button

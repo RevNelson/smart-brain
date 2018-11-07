@@ -94,11 +94,14 @@ class App extends Component {
   }
 
   loadUser = data => {
+    console.log('loading user')
     this.setState({
       user: {
         id: data.id,
         name: data.name,
         email: data.email,
+        age: data.age,
+        pet: data.pet,
         entries: data.entries,
         joined: data.joined
       }
@@ -106,6 +109,8 @@ class App extends Component {
   };
 
   calculateFaceLocations = data => {
+    if (data && data.outputs) {
+
     const faces = data.outputs[0].data.regions;
     const faceBoxes = faces.map(face => face.region_info.bounding_box);
     const image = document.getElementById("inputImage");
@@ -118,10 +123,14 @@ class App extends Component {
       bottomRow: imageHeight - faceBox.bottom_row * imageHeight
     }));
     return boxes;
+    }
+    return
   };
 
   displayFaceBoxes = boxes => {
-    this.setState({ boxes: boxes });
+    if (boxes) {
+      this.setState({ boxes: boxes });
+    }
   };
 
   onInputChange = event => {
@@ -132,7 +141,8 @@ class App extends Component {
     this.setState({ imageURL: this.state.input });
     fetch(process.env.REACT_APP_NODE_SERVER + "/imageurl", {
       method: "post",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",
+                "Authorization": window.sessionStorage.getItem('token')},
       body: JSON.stringify({
         input: this.state.input
       })
@@ -142,7 +152,8 @@ class App extends Component {
         if (response) {
           fetch(process.env.REACT_APP_NODE_SERVER + "/image", {
             method: "put",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json",
+                "Authorization": window.sessionStorage.getItem('token') },
             body: JSON.stringify({
               id: this.state.user.id
             })
